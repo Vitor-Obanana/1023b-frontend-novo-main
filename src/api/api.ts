@@ -1,30 +1,39 @@
-import axios from 'axios'
+import axios from "axios";
 
+// Base da API (troque se o backend estiver em outro host)
 const api = axios.create({
-    baseURL:process.env.API_URL
-})
-//Nós vamos criar um middleware para adicionar o token na requisição
+  baseURL: "http://localhost:5123",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-api.interceptors.request.use((config) =>{
-    const token = localStorage.getItem("token")
-    if(token)
-        config.headers.Authorization = `Bearer ${token}`
-    return config
-})
-
-//Redirecionar para o LOGIN quando o usuário não tiver permissão.
-api.interceptors.response.use(
-    (response)=>response,
-    (error)=>{
-        const status = error?.response?.status;
-        if(status===401&&!(error?.response?.config?.url.endsWith("/login"))){
-            localStorage.removeItem("token")
-            window.location.href="/login?message=Token inválido!"
-        }
-        return Promise.reject(error)
+// 🔐 Interceptor para incluir o token JWT em todas as requisições
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-)
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+// 🚨 Interceptor para tratar erros de autenticação
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Se o token for inválido ou expirou, redireciona para o login
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("tipoUsuario");
+      window.location.href = "/login";
+    }
 
+    // Rejeita o erro para o componente tratar se quiser
+    return Promise.reject(error);
+  }
+);
 
-export default api
+export default api;
