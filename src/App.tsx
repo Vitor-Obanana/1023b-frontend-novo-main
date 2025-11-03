@@ -4,29 +4,29 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 type ProdutoType = {
-  _id: string,
-  nome: string,
-  preco: number,
-  urlfoto: string,
+  _id: string
+  nome: string
+  preco: number
+  urlfoto: string
   descricao: string
 }
 
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([])
   const navigate = useNavigate()
+  const tipoUsuario: string = (localStorage.getItem('tipoUsuario') || '').trim().toLowerCase()
 
-  // ✅ Função de logout
+  useEffect(() => {
+    api.get("/produtos")
+      .then((res) => setProdutos(res.data))
+      .catch((err) => console.error('Erro ao buscar produtos:', err))
+  }, [])
+
   function handleLogout() {
     localStorage.removeItem('token')
     localStorage.removeItem('tipoUsuario')
     navigate('/login')
   }
-
-  useEffect(() => {
-    api.get("/produtos")
-      .then((response) => setProdutos(response.data))
-      .catch((error) => console.error('Error fetching data:', error))
-  }, [])
 
   function handleForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -38,77 +38,72 @@ function App() {
       urlfoto: formData.get('urlfoto') as string,
       descricao: formData.get('descricao') as string
     }
+
     api.post("/produtos", data)
-      .then((response) => setProdutos([...produtos, response.data]))
-      .catch((error) => {
-        console.error('Error posting data:', error)
-        alert('Error posting data:' + error?.mensagem)
-      })
+      .then((res) => setProdutos([...produtos, res.data]))
+      .catch((err) => alert('Erro ao cadastrar produto: ' + (err?.response?.data?.mensagem || err.message)))
+
     form.reset()
   }
 
   function adicionarCarrinho(produtoId: string) {
     api.post('/adicionarItem', { produtoId, quantidade: 1 })
-      .then(() => alert("Produto adicionado no carrinho!"))
-      .catch((error) => {
-        console.error('Error posting data:', error)
-        alert('Error posting data:' + error?.mensagem)
+      .then(() => alert("Produto adicionado ao carrinho!"))
+      .catch((err) => alert('Erro ao adicionar: ' + (err?.response?.data?.mensagem || err.message)))
+  }
+
+  function removerDoCarrinho(produtoId: string) {
+    api.post('/removerItem', { produtoId })
+      .then(() => {
+        alert("Produto removido do carrinho!")
+        setProdutos(prev => prev.filter(p => p._id !== produtoId))
       })
+      .catch((err) => alert('Erro ao remover: ' + (err?.response?.data?.mensagem || err.message)))
+  }
+
+  function excluirProduto(produtoId: string) {
+    if (!window.confirm("Tem certeza que deseja excluir este produto?")) return
+
+    api.delete(`/produtos/${produtoId}`, {
+      headers: { tipousuario: tipoUsuario }
+    })
+      .then(() => setProdutos(prev => prev.filter(p => p._id !== produtoId)))
+      .catch((err) => alert('Erro ao excluir: ' + (err?.response?.data?.mensagem || err.message)))
   }
 
   return (
     <>
-      {/* ✅ Cabeçalho com Logout */}
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px',
-        backgroundColor: '#222',
-        color: 'white'
-      }}>
+      <header>
         <h1>Cadastro de Produtos</h1>
-        <button
-          onClick={handleLogout}
-          style={{
-            backgroundColor: 'red',
-            color: 'white',
-            border: 'none',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
+        <div>
+          <button onClick={() => navigate("/carrinho")}>Ver Carrinho</button>
+          <button className="danger" onClick={handleLogout}>Logout</button>
+        </div>
       </header>
 
-      {/* Formulário */}
-      <form onSubmit={handleForm} style={{ margin: '20px' }}>
-        <input type="text" name="nome" placeholder="Nome" />
-        <input type="number" name="preco" placeholder="Preço" />
-        <input type="text" name="urlfoto" placeholder="URL da Foto" />
-        <input type="text" name="descricao" placeholder="Descrição" />
+      <form onSubmit={handleForm}>
+        <input type="text" name="nome" placeholder="Nome" required />
+        <input type="number" name="preco" placeholder="Preço" required />
+        <input type="text" name="urlfoto" placeholder="URL da Foto" required />
+        <input type="text" name="descricao" placeholder="Descrição" required />
         <button type="submit">Cadastrar</button>
       </form>
 
-      {/* Lista de Produtos */}
-      <div style={{ margin: '20px' }}>
+      <div>
         <h2>Lista de Produtos</h2>
-        {produtos.map((produto) => (
-          <div key={produto._id} style={{
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '10px',
-            marginBottom: '10px'
-          }}>
+        {produtos.map(produto => (
+          <div key={produto._id} className="produto-card">
             <h3>{produto.nome}</h3>
-            <p>R$ {produto.preco}</p>
-            <img src={produto.urlfoto} alt={produto.nome} width="200" />
+            <p>R$ {produto.preco.toFixed(2)}</p>
+            <img src={produto.urlfoto} alt={produto.nome} />
             <p>{produto.descricao}</p>
-            <button onClick={() => adicionarCarrinho(produto._id)}>
-              Adicionar ao carrinho
-            </button>
+            <div className="botoes">
+              <button onClick={() => adicionarCarrinho(produto._id)}>Adicionar ao carrinho</button>
+              <button className="warning" onClick={() => removerDoCarrinho(produto._id)}>Remover do carrinho</button>
+              {tipoUsuario === 'admin' && (
+                <button className="danger" onClick={() => excluirProduto(produto._id)}>Excluir produto</button>
+              )}
+            </div>
           </div>
         ))}
       </div>
