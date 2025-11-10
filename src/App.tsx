@@ -14,11 +14,13 @@ type ProdutoType = {
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([]);
   const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
   const tipoUsuario: string = (localStorage.getItem("tipoUsuario") || "")
     .trim()
     .toLowerCase();
 
- 
+  // --- Buscar produtos ---
   useEffect(() => {
     api
       .get("/produtos")
@@ -26,14 +28,14 @@ function App() {
       .catch((err) => console.error("Erro ao buscar produtos:", err));
   }, []);
 
-  
+  // --- Logout ---
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("tipoUsuario");
     navigate("/login");
   }
 
- 
+  // --- Cadastrar produto (somente admin) ---
   async function handleForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -47,7 +49,9 @@ function App() {
     };
 
     try {
-      const res = await api.post("/produtos", data);
+      const res = await api.post("/produtos", data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProdutos((prev) => [...prev, res.data]);
       form.reset();
     } catch (err: any) {
@@ -58,11 +62,21 @@ function App() {
     }
   }
 
-
+  // --- Adicionar ao carrinho (somente logado) ---
   async function adicionarCarrinho(produtoId: string) {
+    if (!token) {
+      alert("Você precisa estar logado para adicionar ao carrinho!");
+      navigate("/login");
+      return;
+    }
+
     try {
-      await api.post("/adicionarItem", { produtoId, quantidade: 1 });
-      navigate("/carrinho"); 
+      await api.post(
+        "/adicionarItem",
+        { produtoId, quantidade: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate("/carrinho");
     } catch (err: any) {
       alert(
         "Erro ao adicionar: " +
@@ -71,13 +85,13 @@ function App() {
     }
   }
 
-  //  Excluir produto (somente admin)
+  // --- Excluir produto (somente admin) ---
   async function excluirProduto(produtoId: string) {
     if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
 
     try {
       await api.delete(`/produtos/${produtoId}`, {
-        headers: { tipousuario: tipoUsuario },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setProdutos((prev) => prev.filter((p) => p._id !== produtoId));
     } catch (err: any) {
@@ -88,15 +102,31 @@ function App() {
     }
   }
 
+  // --- Ver carrinho (somente logado) ---
+  function irParaCarrinho() {
+    if (!token) {
+      alert("Você precisa estar logado para acessar o carrinho!");
+      navigate("/login");
+      return;
+    }
+    navigate("/carrinho");
+  }
+
   return (
     <>
       <header>
         <h1>Catálogo de Produtos</h1>
         <div>
-          <button onClick={() => navigate("/carrinho")}>Ver Carrinho</button>
-          <button className="danger" onClick={handleLogout}>
-            Logout
-          </button>
+          {token ? (
+            <>
+              <button onClick={irParaCarrinho}>Ver Carrinho</button>
+              <button className="danger" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <button onClick={() => navigate("/login")}>Login</button>
+          )}
         </div>
       </header>
 
@@ -117,12 +147,22 @@ function App() {
             <img src={produto.urlfoto} alt={produto.nome} />
             <h3>{produto.nome}</h3>
             <p>{produto.descricao}</p>
-            <p>{produto.preco.toFixed(2)}</p>
+            <p>R$ {produto.preco.toFixed(2)}</p>
 
             <div className="botoes">
-              <button onClick={() => adicionarCarrinho(produto._id)}>
-                Adicionar ao carrinho
-              </button>
+              {token ? (
+                <button onClick={() => adicionarCarrinho(produto._id)}>
+                  Adicionar ao carrinho
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate("/login")}
+                  style={{ opacity: 0.6, cursor: "not-allowed" }}
+                  disabled
+                >
+                  Faça login para comprar
+                </button>
+              )}
 
               {tipoUsuario === "admin" && (
                 <button
@@ -141,4 +181,3 @@ function App() {
 }
 
 export default App;
-

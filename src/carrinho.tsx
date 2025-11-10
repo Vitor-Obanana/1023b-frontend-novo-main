@@ -14,27 +14,44 @@ function Carrinho() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    carregarCarrinho();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Você precisa fazer login para acessar o carrinho!");
+      navigate("/login");
+      return;
+    }
+    carregarCarrinho(token);
   }, []);
 
-  async function carregarCarrinho() {
+  async function carregarCarrinho(token: string) {
     try {
-      const res = await api.get("/carrinho");
+      const res = await api.get("/carrinho", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setItens(res.data.itens || []);
     } catch (err) {
       console.error("Erro ao carregar carrinho:", err);
+      alert("Erro ao carregar carrinho. Faça login novamente.");
+      navigate("/login");
     }
   }
 
   async function removerItem(produtoId: string) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Você precisa estar logado para remover um item!");
+      return;
+    }
+
     try {
-      await api.post("/removerItem", { produtoId });
+      await api.post(
+        "/removerItem",
+        { produtoId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setItens((prev) => prev.filter((i) => i.produtoId !== produtoId));
     } catch (err: any) {
-      alert(
-        "Erro ao remover item: " +
-          (err?.response?.data?.mensagem || err.message)
-      );
+      alert("Erro ao remover item: " + (err?.response?.data?.mensagem || err.message));
     }
   }
 
@@ -48,7 +65,7 @@ function Carrinho() {
       <h1>Meu Carrinho</h1>
 
       {itens.length === 0 ? (
-        <p>Seu carrinho está vazio </p>
+        <p>Seu carrinho está vazio</p>
       ) : (
         <div>
           {itens.map((item) => (
@@ -59,20 +76,14 @@ function Carrinho() {
               <p>
                 Subtotal: R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
               </p>
-              <button
-                className="danger"
-                onClick={() => removerItem(item.produtoId)}
-              >
+              <button className="danger" onClick={() => removerItem(item.produtoId)}>
                 Remover
               </button>
             </div>
           ))}
 
           <h2>Total: R$ {total.toFixed(2)}</h2>
-          <button
-            className="finalizar"
-            onClick={() => alert("Compra finalizada!")}
-          >
+          <button className="finalizar" onClick={() => alert("Compra finalizada!")}>
             Finalizar Compra
           </button>
         </div>
@@ -86,4 +97,5 @@ function Carrinho() {
 }
 
 export default Carrinho;
+
 
