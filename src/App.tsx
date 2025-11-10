@@ -18,7 +18,7 @@ function App() {
     .trim()
     .toLowerCase();
 
-  // 🔹 Carrega lista de produtos
+ 
   useEffect(() => {
     api
       .get("/produtos")
@@ -26,14 +26,14 @@ function App() {
       .catch((err) => console.error("Erro ao buscar produtos:", err));
   }, []);
 
-  // 🔹 Logout
+  
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("tipoUsuario");
     navigate("/login");
   }
 
-  // 🔹 Cadastrar novo produto
+ 
   async function handleForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -58,11 +58,11 @@ function App() {
     }
   }
 
-  // 🔹 Adicionar ao carrinho e redirecionar
+
   async function adicionarCarrinho(produtoId: string) {
     try {
       await api.post("/adicionarItem", { produtoId, quantidade: 1 });
-      navigate("/carrinho"); // redireciona
+      navigate("/carrinho"); 
     } catch (err: any) {
       alert(
         "Erro ao adicionar: " +
@@ -71,7 +71,7 @@ function App() {
     }
   }
 
-  // 🔹 Excluir produto (somente admin)
+  //  Excluir produto (somente admin)
   async function excluirProduto(produtoId: string) {
     if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
 
@@ -93,7 +93,7 @@ function App() {
       <header>
         <h1>Catálogo de Produtos</h1>
         <div>
-          <button onClick={() => navigate("/carrinho")}>🛍️ Ver Carrinho</button>
+          <button onClick={() => navigate("/carrinho")}>Ver Carrinho</button>
           <button className="danger" onClick={handleLogout}>
             Logout
           </button>
@@ -117,7 +117,7 @@ function App() {
             <img src={produto.urlfoto} alt={produto.nome} />
             <h3>{produto.nome}</h3>
             <p>{produto.descricao}</p>
-            <p>💲 {produto.preco.toFixed(2)}</p>
+            <p>{produto.preco.toFixed(2)}</p>
 
             <div className="botoes">
               <button onClick={() => adicionarCarrinho(produto._id)}>

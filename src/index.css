@@ -20,12 +20,11 @@ body {
   min-height: 100vh;
   background-color: var(--cor-fundo);
   color: var(--cor-texto);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: var(--cor-texto);
   margin-bottom: 0.5em;
 }
@@ -37,106 +36,4 @@ a {
 
 a:hover {
   color: var(--cor-secundaria);
-}
-
-/* Botões */
-button {
-  border-radius: 6px;
-  border: none;
-  padding: 0.5em 1em;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--cor-principal);
-  color: #fff;
-  cursor: pointer;
-  transition: background-color 0.25s, transform 0.2s;
-}
-
-button:hover {
-  background-color: var(--cor-botao-hover);
-  transform: translateY(-2px);
-}
-
-/* Botão de excluir */
-button.danger {
-  background-color: var(--cor-botao-danger);
-}
-
-button.danger:hover {
-  background-color: #c0392b;
-}
-
-/* Formulários */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 20px 0;
-  max-width: 400px;
-  width: 90%;
-}
-
-input, textarea {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--cor-borda);
-  background-color: #2c2c2c;
-  color: var(--cor-texto);
-  font-size: 1rem;
-}
-
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--cor-principal);
-}
-
-/* Cards de produtos */
-.produto-card {
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background-color: #2a2a3b;
-  width: 300px;
-}
-
-.produto-card img {
-  max-width: 100%;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-/* Layout de botões nos cards */
-.produto-card .botoes {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* Header */
-header {
-  width: 100%;
-  padding: 15px 30px;
-  background-color: #222;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-header h1 {
-  font-size: 1.8rem;
-}
-
-header button {
-  font-size: 1rem;
-  padding: 8px 12px;
-}
-
-/* Responsivo */
-@media (max-width: 500px) {
-  .produto-card {
-    width: 90%;
-  }
 }

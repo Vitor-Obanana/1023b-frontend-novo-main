@@ -45,10 +45,10 @@ function Carrinho() {
 
   return (
     <div className="carrinho-container">
-      <h1>🛒 Meu Carrinho</h1>
+      <h1>Meu Carrinho</h1>
 
       {itens.length === 0 ? (
-        <p>Seu carrinho está vazio 😢</p>
+        <p>Seu carrinho está vazio </p>
       ) : (
         <div>
           {itens.map((item) => (
