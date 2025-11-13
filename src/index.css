@@ -9,7 +9,7 @@
   --cor-botao-warning: #f39c12;
 
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   font-weight: 400;
 }
 
@@ -22,18 +22,133 @@ body {
   color: var(--cor-texto);
 }
 
-h1,
-h2,
-h3 {
-  color: var(--cor-texto);
-  margin-bottom: 0.5em;
+/* ======= HEADER ======= */
+header {
+  background-color: #121212;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--cor-borda);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-a {
+header h1 {
+  font-size: 1.5rem;
   color: var(--cor-principal);
-  text-decoration: none;
 }
 
-a:hover {
+nav a {
+  color: var(--cor-texto);
+  margin-left: 1.5rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav a:hover {
   color: var(--cor-secundaria);
+}
+
+/* ======= CONTEÚDO PRINCIPAL ======= */
+main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+/* ======= CARDS DE PRODUTO ======= */
+.card {
+  background-color: #2a2a2a;
+  border: 1px solid var(--cor-borda);
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* ======= BOTÕES ======= */
+button {
+  background-color: var(--cor-principal);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+  background-color: var(--cor-botao-hover);
+  transform: scale(1.05);
+}
+
+button.danger {
+  background-color: var(--cor-botao-danger);
+}
+
+button.warning {
+  background-color: var(--cor-botao-warning);
+}
+
+button.danger:hover,
+button.warning:hover {
+  opacity: 0.9;
+}
+
+/* ======= FOOTER ======= */
+footer {
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid var(--cor-borda);
+  color: #aaa;
+  background-color: #121212;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+}
+
+/* ======= RESPONSIVIDADE ======= */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  nav a {
+    margin: 0.5rem;
+    display: inline-block;
+  }
+
+  main {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
 }

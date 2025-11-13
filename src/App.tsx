@@ -3,6 +3,7 @@ import api from "./api/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Tipo de dados de Produto
 type ProdutoType = {
   _id: string;
   nome: string;
@@ -114,24 +115,27 @@ function App() {
 
   return (
     <>
-      <header>
-        <h1>Catálogo de Produtos</h1>
-        <div>
+      {/* Cabeçalho */}
+      <header className="header">
+        <h1>🛍️ Catálogo de Produtos</h1>
+        <div className="header-buttons">
           {token ? (
             <>
-              <button onClick={irParaCarrinho}>Ver Carrinho</button>
+              <button onClick={irParaCarrinho}>🛒 Ver Carrinho</button>
               <button className="danger" onClick={handleLogout}>
-                Logout
+                🚪 Logout
               </button>
             </>
           ) : (
-            <button onClick={() => navigate("/login")}>Login</button>
+            <button onClick={() => navigate("/login")}>🔐 Login</button>
           )}
         </div>
       </header>
 
+      {/* Formulário para admins */}
       {tipoUsuario === "admin" && (
         <form onSubmit={handleForm} className="form-produto">
+          <h2>Adicionar Novo Produto</h2>
           <input type="text" name="nome" placeholder="Nome" required />
           <input type="number" name="preco" placeholder="Preço" required />
           <input type="text" name="urlfoto" placeholder="URL da Foto" required />
@@ -140,44 +144,45 @@ function App() {
         </form>
       )}
 
+      {/* Lista de produtos */}
       <div className="lista-produtos">
         <h2>Produtos Disponíveis</h2>
-        {produtos.map((produto) => (
-          <div key={produto._id} className="produto-card">
-            <img src={produto.urlfoto} alt={produto.nome} />
-            <h3>{produto.nome}</h3>
-            <p>{produto.descricao}</p>
-            <p>R$ {produto.preco.toFixed(2)}</p>
+        <div className="grid-produtos">
+          {produtos.map((produto) => (
+            <div key={produto._id} className="produto-card">
+              <img src={produto.urlfoto} alt={produto.nome} />
+              <h3>{produto.nome}</h3>
+              <p>{produto.descricao}</p>
+              <p className="preco">R$ {produto.preco.toFixed(2)}</p>
 
-            <div className="botoes">
-              {token ? (
-                <button onClick={() => adicionarCarrinho(produto._id)}>
-                  Adicionar ao carrinho
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate("/login")}
-                  style={{ opacity: 0.6, cursor: "not-allowed" }}
-                  disabled
-                >
-                  Faça login para comprar
-                </button>
-              )}
+              <div className="botoes">
+                {token ? (
+                  <button onClick={() => adicionarCarrinho(produto._id)}>
+                    Adicionar ao Carrinho
+                  </button>
+                ) : (
+                  <button
+                    style={{ opacity: 0.6, cursor: "not-allowed" }}
+                    disabled
+                  >
+                    Faça login para comprar
+                  </button>
+                )}
 
-              {tipoUsuario === "admin" && (
-                <button
-                  className="danger"
-                  onClick={() => excluirProduto(produto._id)}
-                >
-                  Excluir
-                </button>
-              )}
+                {tipoUsuario === "admin" && (
+                  <button
+                    className="danger"
+                    onClick={() => excluirProduto(produto._id)}
+                  >
+                    Excluir
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </>
   );
 }
-
 export default App;
