@@ -36,12 +36,36 @@ function Carrinho() {
     }
   }
 
+  async function alterarQuantidade(produtoId: string, novaQuantidade: number) {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Faça login!");
+
+    try {
+      await api.put(
+        "/alterarQuantidade",
+        { produtoId, novaQuantidade },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Atualiza o estado local sem precisar recarregar o carrinho
+      setItens((prev) =>
+        prev.map((item) =>
+          item.produtoId === produtoId
+            ? { ...item, quantidade: novaQuantidade }
+            : item
+        )
+      );
+    } catch (err: any) {
+      alert(
+        "Erro ao alterar quantidade: " +
+          (err?.response?.data?.mensagem || err.message)
+      );
+    }
+  }
+
   async function removerItem(produtoId: string) {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Você precisa estar logado para remover um item!");
-      return;
-    }
+    if (!token) return alert("Faça login!");
 
     try {
       await api.post(
@@ -49,6 +73,7 @@ function Carrinho() {
         { produtoId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setItens((prev) => prev.filter((i) => i.produtoId !== produtoId));
     } catch (err: any) {
       alert("Erro ao remover item: " + (err?.response?.data?.mensagem || err.message));
@@ -72,10 +97,32 @@ function Carrinho() {
             <div key={item.produtoId} className="produto-card">
               <h3>{item.nome}</h3>
               <p>Preço: R$ {item.precoUnitario.toFixed(2)}</p>
-              <p>Quantidade: {item.quantidade}</p>
+
+              <div className="quantidade-container">
+                <button
+                  onClick={() =>
+                    item.quantidade > 1 &&
+                    alterarQuantidade(item.produtoId, item.quantidade - 1)
+                  }
+                >
+                  -
+                </button>
+
+                <span>{item.quantidade}</span>
+
+                <button
+                  onClick={() =>
+                    alterarQuantidade(item.produtoId, item.quantidade + 1)
+                  }
+                >
+                  +
+                </button>
+              </div>
+
               <p>
                 Subtotal: R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
               </p>
+
               <button className="danger" onClick={() => removerItem(item.produtoId)}>
                 Remover
               </button>
@@ -97,6 +144,3 @@ function Carrinho() {
 }
 
 export default Carrinho;
-
-
-

@@ -2,6 +2,7 @@ import "./App.css";
 import api from "./api/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; // ⭐ ADICIONADO
 
 type ProdutoType = {
   _id: string;
@@ -13,12 +14,27 @@ type ProdutoType = {
 
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([]);
+  const [user, setUser] = useState<any>(null); // ⭐ ADICIONADO
+
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const tipoUsuario: string = (localStorage.getItem("tipoUsuario") || "")
     .trim()
     .toLowerCase();
+
+  // ⭐ DECODIFICAR TOKEN PARA PEGAR NOME E TIPO
+  useEffect(() => {
+    if (!token) return;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      console.log("TOKEN DECODED -->", decoded); // 🔍 DEBUG
+      setUser(decoded);
+    } catch (err) {
+      console.error("Token inválido:", err);
+    }
+  }, [token]);
 
   // --- Buscar produtos ---
   useEffect(() => {
@@ -62,7 +78,7 @@ function App() {
     }
   }
 
-  // --- Adicionar ao carrinho (somente logado) ---
+  // --- Adicionar ao carrinho ---
   async function adicionarCarrinho(produtoId: string) {
     if (!token) {
       alert("Você precisa estar logado para adicionar ao carrinho!");
@@ -85,7 +101,7 @@ function App() {
     }
   }
 
-  // --- Excluir produto (somente admin) ---
+  // --- Excluir produto ---
   async function excluirProduto(produtoId: string) {
     if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
 
@@ -102,7 +118,7 @@ function App() {
     }
   }
 
-  // --- Ver carrinho (somente logado) ---
+  // --- Ver carrinho ---
   function irParaCarrinho() {
     if (!token) {
       alert("Você precisa estar logado para acessar o carrinho!");
@@ -114,9 +130,34 @@ function App() {
 
   return (
     <>
+      {/* ⭐ CAIXA COM NOME E TIPO DO USUÁRIO (CANTO SUPERIOR DIREITO) */}
+      {user && (
+        <div
+          style={{
+            position: "fixed",
+            top: 10,
+            right: 20,
+            background: "#222",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "10px",
+            fontSize: "14px",
+            zIndex: 999,
+            textAlign: "right",
+          }}
+        >
+          <strong>Usuário: {user.nome}</strong>
+          <div style={{ fontSize: "12px", opacity: 0.7 }}>
+            {user.tipo || user.tipoUsuario || user.role || "Tipo não encontrado"}
+          </div>
+        </div>
+      )}
+
       <header>
         <h1>Catálogo de Produtos</h1>
         <div>
+          <button onClick={() => navigate("/produtos")}>Produtos</button>
+
           {token ? (
             <>
               <button onClick={irParaCarrinho}>Ver Carrinho</button>
