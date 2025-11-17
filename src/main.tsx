@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './componentes/login/login.tsx'
 import Erro from './componentes/erro/erro.tsx'
 import Carrinho from './carrinho.tsx' 
-import ListaProdutos from '../src/ListarProdutos.tsx'
+import ListaProdutos from './ListaProdutos.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

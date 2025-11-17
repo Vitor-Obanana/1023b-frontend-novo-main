@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
+import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ function Login() {
       <div className="login-card">
         <h1 className="logo-title">SanPhone</h1>
         <p className="login-subtitle">Bem-vindo à loja SanPhone</p>
+        
 
         <form onSubmit={handleLogin}>
           <input

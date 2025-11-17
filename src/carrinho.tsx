@@ -7,11 +7,16 @@ type ProdutoCarrinho = {
   nome: string;
   precoUnitario: number;
   quantidade: number;
+  urlfoto?: string;
+  precoOriginal?: number;
 };
 
-function Carrinho() {
+export default function Carrinho() {
   const [itens, setItens] = useState<ProdutoCarrinho[]>([]);
   const [carregando, setCarregando] = useState(false);
+  const [cupom, setCupom] = useState("");
+  const [desconto, setDesconto] = useState(0);
+  const [frete, setFrete] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,6 +27,9 @@ function Carrinho() {
       return;
     }
     carregarCarrinho(token);
+
+    // Frete aleatório só para simulação
+    setFrete(Number((Math.random() * 20 + 10).toFixed(2)));
   }, []);
 
   async function carregarCarrinho(token: string) {
@@ -32,8 +40,7 @@ function Carrinho() {
       });
       setItens(res.data.itens || []);
     } catch (err) {
-      console.error("Erro ao carregar carrinho:", err);
-      alert("Erro ao carregar carrinho. Faça login novamente.");
+      alert("Erro ao carregar carrinho.");
       navigate("/login");
     } finally {
       setCarregando(false);
@@ -42,7 +49,7 @@ function Carrinho() {
 
   async function alterarQuantidade(produtoId: string, novaQuantidade: number) {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Faça login!");
+    if (!token) return;
 
     try {
       await api.put(
@@ -50,8 +57,6 @@ function Carrinho() {
         { produtoId, novaQuantidade },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Atualiza o estado local sem precisar recarregar o carrinho
       setItens((prev) =>
         prev.map((item) =>
           item.produtoId === produtoId
@@ -59,163 +64,195 @@ function Carrinho() {
             : item
         )
       );
-    } catch (err: any) {
-      alert(
-        "Erro ao alterar quantidade: " +
-          (err?.response?.data?.mensagem || err.message)
-      );
+    } catch {
+      alert("Erro ao alterar quantidade.");
     }
   }
 
   async function removerItem(produtoId: string) {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Faça login!");
-
+    if (!token) return;
     try {
       await api.post(
         "/removerItem",
         { produtoId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setItens((prev) => prev.filter((i) => i.produtoId !== produtoId));
-    } catch (err: any) {
-      alert("Erro ao remover item: " + (err?.response?.data?.mensagem || err.message));
+    } catch {
+      alert("Erro ao remover item.");
     }
   }
 
-  // NOVA FUNÇÃO: LIMPAR CARRINHO COMPLETO
   async function limparCarrinho() {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Faça login!");
-
-    if (itens.length === 0) {
-      alert("Seu carrinho já está vazio!");
-      return;
-    }
-
-    const confirmacao = window.confirm(
-      "Tem certeza que deseja limpar todo o carrinho? Esta ação não pode ser desfeita."
-    );
-
-    if (!confirmacao) return;
-
+    if (!token) return;
     try {
-      setCarregando(true);
-      const response = await api.delete("/limparCarrinho", {
+      await api.delete("/limparCarrinho", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (response.status === 200) {
-        setItens([]);
-        alert("Carrinho limpo com sucesso!");
-      }
-    } catch (err: any) {
-      console.error("Erro ao limpar carrinho:", err);
-      alert(
-        "Erro ao limpar carrinho: " +
-          (err?.response?.data?.mensagem || err.message)
-      );
-    } finally {
-      setCarregando(false);
+      setItens([]);
+      alert("Carrinho limpo!");
+    } catch {
+      alert("Erro ao limpar carrinho.");
     }
   }
 
-  const total = itens.reduce(
+  function aplicarCupom() {
+    if (cupom.toLowerCase() === "desconto10") {
+      setDesconto(0.1);
+      alert("Cupom aplicado: 10% OFF!");
+    } else if (cupom.toLowerCase() === "fretegratis") {
+      setFrete(0);
+      alert("Cupom aplicado: Frete grátis!");
+    } else {
+      alert("Cupom inválido!");
+      setDesconto(0);
+    }
+  }
+
+  const subtotal = itens.reduce(
     (acc, item) => acc + item.precoUnitario * item.quantidade,
     0
   );
 
+  const totalDesconto = subtotal * desconto;
+  const totalFinal = subtotal - totalDesconto + frete;
+
+  const parcelas = (totalFinal / 10).toFixed(2);
+
   return (
-    <div className="carrinho-container">
+    <div className="carrinho-wrapper">
       <h1>🛒 Meu Carrinho</h1>
 
-      {carregando && <p>Carregando...</p>}
-
-      {itens.length === 0 ? (
-        <div className="carrinho-vazio">
-          <p>Seu carrinho está vazio</p>
-          <button className="voltar" onClick={() => navigate("/")}>
-            ← Continuar Comprando
-          </button>
+      <div className="progresso">
+        <div className="barra">
+          <div
+            className="barra-progresso"
+            style={{ width: `${Math.min((subtotal / 200) * 100, 100)}%` }}
+          ></div>
         </div>
-      ) : (
-        <div>
-          {/* BOTÃO LIMPAR CARRINHO - NOVO */}
-          <div className="carrinho-acoes">
-            <button 
-              className="limpar-carrinho danger" 
-              onClick={limparCarrinho}
-              disabled={carregando}
-            >
-              🗑️ Limpar Carrinho
-            </button>
-          </div>
+        <p>
+          {subtotal >= 200
+            ? "🎉 Você ganhou frete grátis!"
+            : `Faltam R$ ${(200 - subtotal).toFixed(2)} para frete grátis`}
+        </p>
+      </div>
 
-          {itens.map((item) => (
-            <div key={item.produtoId} className="produto-card">
-              <h3>{item.nome}</h3>
-              <p>Preço: R$ {item.precoUnitario.toFixed(2)}</p>
+      <div className="layout">
+        <div className="lista-itens">
+          {itens.length === 0 ? (
+            <p>Seu carrinho está vazio</p>
+          ) : (
+            itens.map((item) => (
+              <div key={item.produtoId} className="produto-card">
+                <img
+                  src={item.urlfoto || "https://via.placeholder.com/80"}
+                  alt={item.nome}
+                />
 
-              <div className="quantidade-container">
-                <button
-                  onClick={() =>
-                    item.quantidade > 1 &&
-                    alterarQuantidade(item.produtoId, item.quantidade - 1)
-                  }
-                  disabled={carregando}
-                >
-                  -
-                </button>
+                <div className="info">
+                  <h3>{item.nome}</h3>
 
-                <span>{item.quantidade}</span>
+                  <p className="preco">
+                    {item.precoOriginal && (
+                      <span className="preco-riscado">
+                        R$ {item.precoOriginal.toFixed(2)}
+                      </span>
+                    )}
+                    <strong>
+                      R$ {item.precoUnitario.toFixed(2)}
+                    </strong>
+                  </p>
 
-                <button
-                  onClick={() =>
-                    alterarQuantidade(item.produtoId, item.quantidade + 1)
-                  }
-                  disabled={carregando}
-                >
-                  +
-                </button>
+                  <div className="quantidade">
+                    <button
+                      onClick={() =>
+                        item.quantidade > 1 &&
+                        alterarQuantidade(
+                          item.produtoId,
+                          item.quantidade - 1
+                        )
+                      }
+                    >
+                      -
+                    </button>
+                    <span>{item.quantidade}</span>
+                    <button
+                      onClick={() =>
+                        alterarQuantidade(
+                          item.produtoId,
+                          item.quantidade + 1
+                        )
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <p className="subtotal">
+                    Subtotal:{" "}
+                    <strong>
+                      R$
+                      {(item.precoUnitario * item.quantidade).toFixed(2)}
+                    </strong>
+                  </p>
+
+                  <button
+                    className="remover"
+                    onClick={() => removerItem(item.produtoId)}
+                  >
+                    ❌ Remover
+                  </button>
+                </div>
               </div>
+            ))
+          )}
+        </div>
 
-              <p>
-                Subtotal: R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
-              </p>
+        <div className="resumo">
+          <h2>Resumo da Compra</h2>
 
-              <button 
-                className="danger" 
-                onClick={() => removerItem(item.produtoId)}
-                disabled={carregando}
-              >
-                Remover
-              </button>
-            </div>
-          ))}
+          <p>Subtotal: R$ {subtotal.toFixed(2)}</p>
+          <p>Frete: R$ {frete.toFixed(2)}</p>
 
-          <div className="carrinho-total">
-            <h2>Total: R$ {total.toFixed(2)}</h2>
-            <button 
-              className="finalizar" 
-              onClick={() => alert("Compra finalizada!")}
-              disabled={carregando}
-            >
-              Finalizar Compra
-            </button>
+          {desconto > 0 && (
+            <p className="desconto">
+              Desconto: - R$ {totalDesconto.toFixed(2)}
+            </p>
+          )}
+
+          <hr />
+
+          <h3>Total: R$ {totalFinal.toFixed(2)}</h3>
+
+          <p className="parcelamento">
+            Ou 10x de <strong>R$ {parcelas}</strong> sem juros
+          </p>
+
+          <div className="cupom">
+            <input
+              type="text"
+              placeholder="Digite seu cupom"
+              value={cupom}
+              onChange={(e) => setCupom(e.target.value)}
+            />
+            <button onClick={aplicarCupom}>Aplicar</button>
           </div>
 
-          <button 
-            className="voltar" 
-            onClick={() => navigate("/")}
-            disabled={carregando}
-          >
-            ← Voltar para produtos
+          <button className="finalizar" onClick={() => alert("Compra finalizada!")}>
+            Finalizar Compra
+          </button>
+
+          <button className="limpar" onClick={limparCarrinho}>
+            🗑 Limpar Carrinho
+          </button>
+
+          <button className="voltar" onClick={() => navigate("/")}>
+            ← Continuar comprando
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
-
-export default Carrinho;

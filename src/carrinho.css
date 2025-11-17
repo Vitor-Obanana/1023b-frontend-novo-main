@@ -1,0 +1,266 @@
+/* ----------- Layout geral ----------- */
+.carrinho-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  color: #fff;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.carrinho-wrapper h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.4rem;
+  color: #00d1ff;
+}
+
+/* ----------- Barra de Progresso ----------- */
+
+.progresso {
+  background: #1f1f1f;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, .4);
+}
+
+.barra {
+  width: 100%;
+  height: 10px;
+  background: #333;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.barra-progresso {
+  height: 100%;
+  background: linear-gradient(90deg, #4d9fff, #00eaff);
+  border-radius: 10px;
+  transition: width .4s ease;
+}
+
+.progresso p {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+/* ----------- Layout principal ----------- */
+
+.layout {
+  display: flex;
+  gap: 20px;
+}
+
+.lista-itens {
+  flex: 2;
+}
+
+.resumo {
+  flex: 1;
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, .5);
+  height: fit-content;
+}
+
+/* ----------- Cartão do produto ----------- */
+
+.produto-card {
+  background: #1a1a1a;
+  display: flex;
+  padding: 15px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, .4);
+  align-items: center;
+  gap: 15px;
+}
+
+.produto-card img {
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.produto-card .info {
+  flex: 1;
+}
+
+.produto-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #4d9fff;
+}
+
+/* Preço */
+.preco {
+  margin: 5px 0;
+  font-size: 1.1rem;
+}
+
+.preco-riscado {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 5px;
+}
+
+/* Quantidade com botões */
+.quantidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.quantidade button {
+  width: 28px;
+  height: 28px;
+  font-size: 1.1rem;
+  border: none;
+  background: #333;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.quantidade button:hover {
+  background: #4d9fff;
+}
+
+.subtotal {
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
+.remover {
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+.remover:hover {
+  color: #ff0000;
+}
+
+
+/* ----------- Resumo da compra ----------- */
+
+.resumo h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #00d1ff;
+}
+
+.resumo p {
+  font-size: 1rem;
+  margin: 6px 0;
+}
+
+.desconto {
+  color: #00ff88;
+}
+
+/* Cupom */
+.cupom {
+  display: flex;
+  margin: 15px 0;
+}
+
+.cupom input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px 0 0 8px;
+  border: none;
+  outline: none;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.cupom button {
+  padding: 8px 15px;
+  background: #00d1ff;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  font-weight: bold;
+  color: #000;
+  transition: 0.2s;
+}
+
+.cupom button:hover {
+  background: #4d9fff;
+}
+
+/* Botões principais */
+.finalizar,
+.limpar,
+.voltar {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: .2s;
+  font-size: 1rem;
+}
+
+.finalizar {
+  background: #00ff88;
+  color: #000;
+}
+.finalizar:hover {
+  background: #00cc6a;
+}
+
+.limpar {
+  background: #ff4d4d;
+  color: #fff;
+}
+.limpar:hover {
+  background: #e60000;
+}
+
+.voltar {
+  background: #4d9fff;
+  color: #000;
+}
+.voltar:hover {
+  background: #1e7be0;
+}
+
+
+/* ----------- RESPONSIVIDADE ----------- */
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .resumo {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .produto-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .produto-card img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .quantidade {
+    justify-content: center;
+  }
+}
