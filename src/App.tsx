@@ -43,7 +43,7 @@ function App() {
 
   useEffect(() => {
     fetchProdutos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   async function fetchProdutos() {
@@ -129,7 +129,7 @@ function App() {
     navigate("/carrinho");
   }
 
-  // FILTRO E ORDENAÇÃO
+
   const produtosFiltrados = useMemo(() => {
     const q = query.trim().toLowerCase();
     let lista = produtos.filter((p) => {
@@ -152,7 +152,7 @@ function App() {
 
   return (
     <>
-      {/* BANNER / HERO */}
+      {}
       <section className="hero">
         <div className="hero-inner">
           <div>
@@ -192,7 +192,6 @@ function App() {
         </div>
       </section>
 
-      {/* Usuário no canto */}
       {user && (
         <div className="user-box" role="status" aria-live="polite">
           <div className="user-line">
@@ -202,7 +201,7 @@ function App() {
         </div>
       )}
 
-      {/* HEADER */}
+ 
       <header className="main-header">
         <h2 className="sr-only">SanPhone</h2>
         <div className="header-left">
@@ -223,7 +222,7 @@ function App() {
         </div>
       </header>
 
-      {/* ADMIN FORM */}
+
       {tipoUsuario === "admin" && (
         <section className="admin-panel">
           <h3>Painel Admin — Cadastrar produto</h3>
