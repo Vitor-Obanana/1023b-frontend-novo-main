@@ -135,7 +135,7 @@ export default function Carrinho() {
 
       {itens.length === 0 ? (
         <div className="carrinho-vazio">
-          <p>Seu carrinho está vazio 😕</p>
+          <p>Seu carrinho está vazio</p>
           <button className="voltar" onClick={() => navigate("/")}>
             ← Continuar Comprando
           </button>
