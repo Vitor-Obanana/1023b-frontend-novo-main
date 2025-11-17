@@ -11,6 +11,7 @@ type ProdutoCarrinho = {
 
 function Carrinho() {
   const [itens, setItens] = useState<ProdutoCarrinho[]>([]);
+  const [carregando, setCarregando] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +26,7 @@ function Carrinho() {
 
   async function carregarCarrinho(token: string) {
     try {
+      setCarregando(true);
       const res = await api.get("/carrinho", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -33,6 +35,8 @@ function Carrinho() {
       console.error("Erro ao carregar carrinho:", err);
       alert("Erro ao carregar carrinho. Faça login novamente.");
       navigate("/login");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -80,6 +84,43 @@ function Carrinho() {
     }
   }
 
+  // NOVA FUNÇÃO: LIMPAR CARRINHO COMPLETO
+  async function limparCarrinho() {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Faça login!");
+
+    if (itens.length === 0) {
+      alert("Seu carrinho já está vazio!");
+      return;
+    }
+
+    const confirmacao = window.confirm(
+      "Tem certeza que deseja limpar todo o carrinho? Esta ação não pode ser desfeita."
+    );
+
+    if (!confirmacao) return;
+
+    try {
+      setCarregando(true);
+      const response = await api.delete("/limparCarrinho", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        setItens([]);
+        alert("Carrinho limpo com sucesso!");
+      }
+    } catch (err: any) {
+      console.error("Erro ao limpar carrinho:", err);
+      alert(
+        "Erro ao limpar carrinho: " +
+          (err?.response?.data?.mensagem || err.message)
+      );
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   const total = itens.reduce(
     (acc, item) => acc + item.precoUnitario * item.quantidade,
     0
@@ -87,12 +128,30 @@ function Carrinho() {
 
   return (
     <div className="carrinho-container">
-      <h1>Meu Carrinho</h1>
+      <h1>🛒 Meu Carrinho</h1>
+
+      {carregando && <p>Carregando...</p>}
 
       {itens.length === 0 ? (
-        <p>Seu carrinho está vazio</p>
+        <div className="carrinho-vazio">
+          <p>Seu carrinho está vazio</p>
+          <button className="voltar" onClick={() => navigate("/")}>
+            ← Continuar Comprando
+          </button>
+        </div>
       ) : (
         <div>
+          {/* BOTÃO LIMPAR CARRINHO - NOVO */}
+          <div className="carrinho-acoes">
+            <button 
+              className="limpar-carrinho danger" 
+              onClick={limparCarrinho}
+              disabled={carregando}
+            >
+              🗑️ Limpar Carrinho
+            </button>
+          </div>
+
           {itens.map((item) => (
             <div key={item.produtoId} className="produto-card">
               <h3>{item.nome}</h3>
@@ -104,6 +163,7 @@ function Carrinho() {
                     item.quantidade > 1 &&
                     alterarQuantidade(item.produtoId, item.quantidade - 1)
                   }
+                  disabled={carregando}
                 >
                   -
                 </button>
@@ -114,6 +174,7 @@ function Carrinho() {
                   onClick={() =>
                     alterarQuantidade(item.produtoId, item.quantidade + 1)
                   }
+                  disabled={carregando}
                 >
                   +
                 </button>
@@ -123,22 +184,36 @@ function Carrinho() {
                 Subtotal: R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
               </p>
 
-              <button className="danger" onClick={() => removerItem(item.produtoId)}>
+              <button 
+                className="danger" 
+                onClick={() => removerItem(item.produtoId)}
+                disabled={carregando}
+              >
                 Remover
               </button>
             </div>
           ))}
 
-          <h2>Total: R$ {total.toFixed(2)}</h2>
-          <button className="finalizar" onClick={() => alert("Compra finalizada!")}>
-            Finalizar Compra
+          <div className="carrinho-total">
+            <h2>Total: R$ {total.toFixed(2)}</h2>
+            <button 
+              className="finalizar" 
+              onClick={() => alert("Compra finalizada!")}
+              disabled={carregando}
+            >
+              Finalizar Compra
+            </button>
+          </div>
+
+          <button 
+            className="voltar" 
+            onClick={() => navigate("/")}
+            disabled={carregando}
+          >
+            ← Voltar para produtos
           </button>
         </div>
       )}
-
-      <button className="voltar" onClick={() => navigate("/")}>
-        ← Voltar para produtos
-      </button>
     </div>
   );
 }
