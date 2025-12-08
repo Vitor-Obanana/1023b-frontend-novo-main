@@ -2,7 +2,7 @@ import "./App.css";
 import api from "./api/api";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 type ProdutoType = {
   _id: string;
@@ -17,42 +17,60 @@ type ProdutoType = {
   criadoEm?: string;
 };
 
+interface DecodedToken {
+  nome?: string;
+  name?: string;
+  tipo?: string;
+  type?: string;
+  role?: string;
+  email?: string;
+  sub?: string;
+}
+
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<DecodedToken | null>(null);
   const [query, setQuery] = useState("");
   const [ordenar, setOrdenar] = useState<"padrao" | "preco-asc" | "preco-desc" | "nome">("padrao");
   const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState<string>("");
 
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const tipoUsuario: string = (localStorage.getItem("tipoUsuario") || "")
+  const tipoUsuario = (localStorage.getItem("tipoUsuario") || "")
     .trim()
     .toLowerCase();
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setUser(null);
+      return;
+    }
     try {
-      const decoded: any = jwtDecode(token);
+      const decoded = jwtDecode<DecodedToken>(token);
       setUser(decoded);
     } catch (err) {
       console.error("Token inválido:", err);
+      setUser(null);
+      localStorage.removeItem("token");
     }
   }, [token]);
 
   useEffect(() => {
     fetchProdutos();
-
   }, []);
 
   async function fetchProdutos() {
     setCarregando(true);
+    setErro("");
     try {
       const res = await api.get("/produtos");
-      setProdutos(res.data || []);
-    } catch (err) {
+      const produtos = Array.isArray(res.data) ? res.data : [];
+      setProdutos(produtos);
+    } catch (err: any) {
       console.error("Erro ao buscar produtos:", err);
+      setErro("Erro ao carregar produtos. Tente novamente.");
       setProdutos([]);
     } finally {
       setCarregando(false);
@@ -71,20 +89,42 @@ function App() {
     const formData = new FormData(form);
 
     const data = {
-      nome: formData.get("nome") as string,
+      nome: (formData.get("nome") as string).trim(),
       preco: Number(formData.get("preco")),
-      urlfoto: formData.get("urlfoto") as string,
-      descricao: formData.get("descricao") as string,
+      urlfoto: (formData.get("urlfoto") as string).trim(),
+      descricao: (formData.get("descricao") as string).trim(),
     };
+
+    // Validação básica
+    if (!data.nome || !data.urlfoto || !data.descricao) {
+      alert("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (data.preco <= 0) {
+      alert("O preço deve ser maior que zero.");
+      return;
+    }
 
     try {
       const res = await api.post("/produtos", data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setProdutos((prev) => [...prev, res.data]);
-      form.reset();
+      
+      // Verifica se res.data é um produto válido
+      if (res.data && (res.data as any)._id) {
+        setProdutos((prev) => [...prev, res.data as ProdutoType]);
+        form.reset();
+        alert("Produto cadastrado com sucesso!");
+      } else {
+        // Se a resposta não contiver o produto, refaz a busca
+        await fetchProdutos();
+        form.reset();
+        alert("Produto cadastrado com sucesso!");
+      }
     } catch (err: any) {
-      alert("Erro ao cadastrar produto: " + (err?.response?.data?.mensagem || err.message));
+      const mensagem = err?.response?.data?.mensagem || err?.response?.data?.message || err.message;
+      alert("Erro ao cadastrar produto: " + mensagem);
     }
   }
 
@@ -101,9 +141,11 @@ function App() {
         { produtoId, quantidade: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      alert("Produto adicionado ao carrinho!");
       navigate("/carrinho");
     } catch (err: any) {
-      alert("Erro ao adicionar: " + (err?.response?.data?.mensagem || err.message));
+      const mensagem = err?.response?.data?.mensagem || err?.response?.data?.message || err.message;
+      alert("Erro ao adicionar: " + mensagem);
     }
   }
 
@@ -115,8 +157,10 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProdutos((prev) => prev.filter((p) => p._id !== produtoId));
+      alert("Produto excluído com sucesso!");
     } catch (err: any) {
-      alert("Erro ao excluir: " + (err?.response?.data?.mensagem || err.message));
+      const mensagem = err?.response?.data?.mensagem || err?.response?.data?.message || err.message;
+      alert("Erro ao excluir: " + mensagem);
     }
   }
 
@@ -153,6 +197,11 @@ function App() {
   return (
     <>
       {}
+      {erro && (
+        <div className="error-banner" style={{ backgroundColor: "#fee", color: "#c33", padding: "12px", textAlign: "center", marginBottom: "16px" }}>
+          {erro}
+        </div>
+      )}
       <section className="hero">
         <div className="hero-inner">
           <div>
@@ -195,9 +244,11 @@ function App() {
       {user && (
         <div className="user-box" role="status" aria-live="polite">
           <div className="user-line">
-            <strong>Usuário:</strong> {user.nome || "—"}
+            <strong>Usuário:</strong> {user.nome || user.name || "—"}
           </div>
-          <div className="user-line small">{user.tipo || user.tipoUsuario || user.role || "Tipo não informado"}</div>
+          <div className="user-line small">
+            {user.tipo || user.type || user.role || "Tipo não informado"}
+          </div>
         </div>
       )}
 
@@ -216,7 +267,7 @@ function App() {
             {token ? (
               <button className="danger" onClick={handleLogout}>Sair</button>
             ) : (
-              <button onClick={() => navigate("/login")}>Entrar</button>
+              <button onClick={() => navigate("/login")} className="ghost-btn">Entrar</button>
             )}
           </div>
         </div>
