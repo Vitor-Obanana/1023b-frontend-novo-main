@@ -85,44 +85,6 @@ function App() {
     navigate("/login");
   }
 
-  // =============================== FORM CADASTRO PRODUTO ================================
-  async function handleForm(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-
-    const data = {
-      nome: (formData.get("nome") as string).trim(),
-      preco: Number(formData.get("preco")),
-      urlfoto: (formData.get("urlfoto") as string).trim(),
-      descricao: (formData.get("descricao") as string).trim(),
-    };
-
-    if (!data.nome || !data.urlfoto || !data.descricao) {
-      alert("Preencha todos os campos obrigatórios.");
-      return;
-    }
-
-    try {
-      const res = await api.post("/produtos", data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const novoProduto = res.data as ProdutoType;
-      if (novoProduto && novoProduto._id) {
-        setProdutos((prev) => [...prev, novoProduto]);
-      } else {
-        await fetchProdutos();
-      }
-
-      form.reset();
-      alert("Produto cadastrado com sucesso!");
-
-    } catch (err: any) {
-      alert("Erro ao cadastrar: " + (err.response?.data?.mensagem || err.message));
-    }
-  }
-
   // =============================== ADICIONAR AO CARRINHO ================================
   async function adicionarCarrinho(produtoId: string) {
     if (!token) {
@@ -152,7 +114,7 @@ function App() {
 
     try {
       await api.delete(`/produtos/${produtoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, tipoUsuario },
       });
 
       setProdutos((prev) => prev.filter((p) => p._id !== produtoId));
@@ -173,7 +135,7 @@ function App() {
     navigate("/carrinho");
   }
 
-  // =============================== FILTRO E ORDENAR ================================
+  // =============================== FILTRO + ORDENAR ================================
   const produtosFiltrados = useMemo(() => {
     const q = query.trim().toLowerCase();
 
@@ -195,11 +157,7 @@ function App() {
   // =============================== RENDER ================================
   return (
     <>
-      {erro && (
-        <div className="error-banner">
-          {erro}
-        </div>
-      )}
+      {erro && <div className="error-banner">{erro}</div>}
 
       {/* HERO */}
       <section className="hero">
@@ -248,6 +206,13 @@ function App() {
           <button onClick={() => navigate("/produtos")}>Produtos</button>
           <button onClick={irParaCarrinho}>Carrinho</button>
 
+          {/* BOTÃO EXCLUSIVO PARA ADMIN */}
+          {tipoUsuario.toLowerCase() === "admin" && (
+            <button onClick={() => navigate("/admin/cadastrar-produto")}>
+              Cadastrar Produto
+            </button>
+          )}
+
           {token ? (
             <button className="danger" onClick={handleLogout}>Sair</button>
           ) : (
@@ -255,20 +220,6 @@ function App() {
           )}
         </div>
       </header>
-
-      {/* PAINEL ADMIN */}
-      {tipoUsuario === "admin" && (
-        <section className="admin-panel">
-          <h3>Cadastrar Produto</h3>
-          <form onSubmit={handleForm} className="admin-form">
-            <input name="nome" placeholder="Nome" required />
-            <input name="preco" type="number" placeholder="Preço" required />
-            <input name="urlfoto" placeholder="URL da foto" required />
-            <input name="descricao" placeholder="Descrição" required />
-            <button type="submit">Cadastrar</button>
-          </form>
-        </section>
-      )}
 
       {/* CATÁLOGO */}
       <main className="container">
@@ -291,11 +242,11 @@ function App() {
                 <h3>{produto.nome}</h3>
                 <p>{produto.descricao}</p>
 
-                <div className="price">R$ {produto.preco.toFixed(2)}</div>
+                <div className="price">R$ {(produto.preco).toFixed(2)}</div>
 
                 <button onClick={() => adicionarCarrinho(produto._id)}>Adicionar</button>
 
-                {tipoUsuario === "admin" && (
+                {tipoUsuario.toLowerCase() === "admin" && (
                   <button className="danger" onClick={() => excluirProduto(produto._id)}>
                     Excluir
                   </button>
