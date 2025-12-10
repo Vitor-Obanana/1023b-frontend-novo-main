@@ -36,7 +36,13 @@ export default function Carrinho() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setItens(res.data.itens || []);
+      const carrinhoData = res.data as { itens: any[] };
+      setItens(
+        (carrinhoData.itens || []).map((item: any) => ({
+          ...item,
+          precoUnitario: item.precoUnitario,
+        }))
+      );
     } catch {
       alert("Erro ao carregar carrinho. Faça login novamente.");
       navigate("/login");
@@ -92,7 +98,6 @@ export default function Carrinho() {
     if (itens.length === 0) return alert("Seu carrinho já está vazio!");
 
     const confirmar = window.confirm("Deseja limpar todo o carrinho?");
-
     if (!confirmar) return;
 
     try {
@@ -110,7 +115,35 @@ export default function Carrinho() {
     }
   }
 
-  // total sem desconto
+  // 🔵 FUNÇÃO CORRIGIDA
+  async function finalizarCompra() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Você precisa estar logado para pagar!");
+      return;
+    }
+
+    try {
+      const res = await api.post(
+        "/checkout", // ✓ rota correta
+        { itens },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const checkoutData = res.data as { url?: string };
+      if (checkoutData.url) {
+        window.location.href = checkoutData.url; // ✓ redirecionamento Stripe
+      } else {
+        alert("Erro inesperado: Stripe não retornou URL.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao iniciar pagamento.");
+    }
+  }
+
   const subtotal = itens.reduce(
     (acc, item) => acc + item.precoUnitario * item.quantidade,
     0
@@ -142,11 +175,8 @@ export default function Carrinho() {
         </div>
       ) : (
         <div className="layout">
-
-          {/* LISTA DE PRODUTOS */}
           {itens.map((item) => (
             <div key={item.produtoId} className="produto-card">
-
               <div className="produto-info">
                 <h3>{item.nome}</h3>
 
@@ -192,7 +222,6 @@ export default function Carrinho() {
             </div>
           ))}
 
-          {/* RESUMO DO CARRINHO */}
           <div className="resumo">
             <h2>Resumo</h2>
 
@@ -206,7 +235,6 @@ export default function Carrinho() {
               </p>
             )}
 
-            {/* CUPOM */}
             <div className="cupom">
               <input
                 type="text"
@@ -221,11 +249,9 @@ export default function Carrinho() {
               Total: <strong>R$ {totalFinal.toFixed(2)}</strong>
             </p>
 
-            <button
-              className="finalizar"
-              onClick={() => alert("Compra finalizada!")}
-            >
-              Finalizar Compra
+            {/* 🔵 BOTÃO PAGAR CORRIGIDO */}
+            <button className="finalizar" onClick={finalizarCompra}>
+              Pagar com Cartão 💳
             </button>
 
             <button className="limpar" onClick={limparCarrinho}>

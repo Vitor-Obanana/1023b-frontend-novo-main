@@ -1,0 +1,89 @@
+/* --- Tela cheia com fundo escuro --- */
+.sucesso-container {
+  width: 100%;
+  height: 100vh;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* --- Cartão central --- */
+.sucesso-card {
+  background: #111;
+  padding: 40px;
+  border-radius: 16px;
+  width: 380px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  border: 1px solid #00d1ff22;
+}
+
+/* Título */
+.sucesso-card h1 {
+  color: #00ff88;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px #00ff8844;
+}
+
+/* Texto */
+.sucesso-card p {
+  font-size: 1.2rem;
+  margin-bottom: 25px;
+  color: #ddd;
+}
+
+/* Botões */
+.botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Estilo dos botões */
+.botoes button {
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+/* Botão voltar */
+.botoes button:first-child {
+  background: #4d9fff;
+  color: #000;
+}
+.botoes button:first-child:hover {
+  background: #1e7be0;
+}
+
+/* Botão revisar pedido */
+.botoes button:last-child {
+  background: #00ff88;
+  color: #000;
+}
+.botoes button:last-child:hover {
+  background: #00cc6a;
+}
+
+/* Responsivo */
+@media (max-width: 500px) {
+  .sucesso-card {
+    width: 90%;
+    padding: 25px;
+  }
+
+  .sucesso-card h1 {
+    font-size: 1.7rem;
+  }
+
+  .sucesso-card p {
+    font-size: 1rem;
+  }
+}

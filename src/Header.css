@@ -1,0 +1,31 @@
+.header {
+  width: 100%;
+  background: #111;
+  padding: 15px 25px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #00d1ff;
+}
+
+.logo {
+  font-size: 1.4rem;
+  color: #00d1ff;
+}
+
+.user-info {
+  text-align: right;
+  font-size: 0.95rem;
+}
+
+.user-info p {
+  margin: 0;
+  font-weight: bold;
+  color: #4d9fff;
+}
+
+.user-info span {
+  font-size: 0.85rem;
+  color: #ccc;
+}
