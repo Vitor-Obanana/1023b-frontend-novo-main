@@ -30,6 +30,7 @@ interface DecodedToken {
 function App() {
   const [produtos, setProdutos] = useState<ProdutoType[]>([]);
   const [user, setUser] = useState<DecodedToken | null>(null);
+  const [tipoUsuario, setTipoUsuario] = useState("");
   const [query, setQuery] = useState("");
   const [ordenar, setOrdenar] = useState<"padrao" | "preco-asc" | "preco-desc" | "nome">("padrao");
   const [carregando, setCarregando] = useState(false);
@@ -38,20 +39,23 @@ function App() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const tipoUsuario = (localStorage.getItem("tipoUsuario") || "").trim().toLowerCase();
 
   // =============================== TOKEN ================================
   useEffect(() => {
     if (!token) {
       setUser(null);
+      setTipoUsuario("");
       return;
     }
     try {
       const decoded = jwtDecode<DecodedToken>(token);
       setUser(decoded);
+      const tipo = (localStorage.getItem("tipoUsuario") || "").trim().toLowerCase();
+      setTipoUsuario(tipo);
     } catch (err) {
       console.error("Token inválido:", err);
       setUser(null);
+      setTipoUsuario("");
       localStorage.removeItem("token");
     }
   }, [token]);
@@ -207,7 +211,7 @@ function App() {
           <button onClick={irParaCarrinho}>Carrinho</button>
 
           {/* BOTÃO EXCLUSIVO PARA ADMIN */}
-          {tipoUsuario.toLowerCase() === "admin" && (
+          {tipoUsuario === "admin" && (
             <button onClick={() => navigate("/admin/cadastrar-produto")}>
               Cadastrar Produto
             </button>
@@ -246,7 +250,7 @@ function App() {
 
                 <button onClick={() => adicionarCarrinho(produto._id)}>Adicionar</button>
 
-                {tipoUsuario.toLowerCase() === "admin" && (
+                {tipoUsuario === "admin" && (
                   <button className="danger" onClick={() => excluirProduto(produto._id)}>
                     Excluir
                   </button>

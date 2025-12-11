@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import "./Login.css";
 
+interface LoginResponse {
+  token: string;
+  tipo: string;
+}
+
 function Login() {
   const navigate = useNavigate();
 
@@ -13,7 +18,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/login", { email, senha });
+      const res = await api.post<LoginResponse>("/login", { email, senha });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("tipoUsuario", res.data.tipo);
