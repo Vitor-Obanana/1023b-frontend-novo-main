@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "./api/api";
 import { useNavigate } from "react-router-dom";
-import "./Carrinho.css";
+import "./carrinho.css";
 
 type ProdutoCarrinho = {
   produtoId: string;
