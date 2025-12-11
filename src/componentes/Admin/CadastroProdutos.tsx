@@ -101,19 +101,3 @@ export default function AdminCreateProduct() {
     </form>
   );
 }
- async function buscarProduto(id: number) {
-
-  try {
-    const response = await fetch(`http://localhost:8000/produtos/${id}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.mensagem); // "Produto não encontrado"
-      return;
-    }
-
-    console.log(data);
-  } catch (err) {
-    alert("Erro ao buscar o produto. Verifique sua conexão.");
-  }
-}
